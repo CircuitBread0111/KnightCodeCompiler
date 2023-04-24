@@ -35,8 +35,9 @@ public class Visitor extends KnightCodeBaseVisitor<Object> {
     public Object visitFile(FileContext ctx) {
         String programName = ctx.getChild(1).getText();
         output = new ASM(programName);
-        visit(ctx.declare());
-        visit(ctx.body());
+        if (ctx.declare() != null) visit(ctx.declare());
+        if (ctx.body() != null) visit(ctx.body());
+        else reportError(ctx, "No body in program.");
         return null;
     }
 
@@ -223,14 +224,54 @@ public class Visitor extends KnightCodeBaseVisitor<Object> {
 
     @Override
     public Object visitDecision(DecisionContext ctx) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitDecision'");
+        // do the comparison
+        visit(ctx.getChild(1));
+        visit(ctx.getChild(3));
+        visit(ctx.comp());
+        Label ifLabel = new Label();
+        Label endIfLabel = new Label();
+        
+        // get token positions
+        int elsePosition = -1, endIfPosition = -1;
+        for (int i = 5; i < ctx.getChildCount(); i++) {
+        	if (ctx.getChild(i).getText().equals("ELSE")) elsePosition = i;
+        	else if (ctx.getChild(i).getText().equals("ENDIF")) {
+        		endIfPosition = i;
+        		break;
+        	}
+        }
+        
+        // value is nonzero, so it is true.
+        output.mv.visitJumpInsn(Opcodes.IF_ICMPNE, ifLabel);
+        // else
+        if (elsePosition > -1) {
+        	for (int i = elsePosition; i < endIfPosition; i++) {
+        		visit(ctx.getChild(i));
+        	}
+        }
+        output.mv.visitJumpInsn(Opcodes.GOTO, endIfLabel);
+        output.mv.visitLabel(ifLabel);
+    	for (int i = 5; elsePosition != -1 && i < endIfPosition || i < elsePosition; i++) {
+    		visit(ctx.getChild(i));
+    	}
+        output.mv.visitLabel(endIfLabel);
+        
+        return null;
     }
 
     @Override
     public Object visitLoop(LoopContext ctx) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitLoop'");
+        Label beginLoop = new Label();
+        Label endLoop = new Label();
+        output.mv.visitLabel(beginLoop);
+        visit(ctx.getChild(1));
+        visit(ctx.getChild(3));
+        visit(ctx.comp());
+        output.mv.visitJumpInsn(Opcodes.IF_ICMPEQ, endLoop);
+        visit(ctx.stat(0));
+        output.mv.visitJumpInsn(Opcodes.GOTO, beginLoop);
+        output.mv.visitLabel(endLoop);
+        return null;
     }
 
 }
