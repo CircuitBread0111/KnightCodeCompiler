@@ -218,8 +218,22 @@ public class Visitor extends KnightCodeBaseVisitor<Object> {
 
     @Override
     public Object visitRead(ReadContext ctx) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitRead'");
+		String symbol = ctx.ID().getText();
+		Variable var = st.lookup(symbol);
+		if (var == null) reportError(ctx, String.format("There is no variable '%s'.", symbol));
+		// make that scanner
+		output.mv.visitTypeInsn(Opcodes.NEW, "java/util/Scanner");
+        output.mv.visitInsn(Opcodes.DUP);
+        output.mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "in", "Ljava/io/InputStream;");
+        output.mv.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/util/Scanner", "<init>", "(Ljava/io/InputStream;)V", false);
+        if (var.type == Variable.Type.INTEGER) {
+        	output.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/util/Scanner", "nextInt", "()I", false);
+        	output.mv.visitVarInsn(Opcodes.ISTORE, var.loc);
+        } else if (var.type == Variable.Type.STRING) {
+        	output.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/util/Scanner", "next", "()Ljava/lang/String;", false);
+        	output.mv.visitVarInsn(Opcodes.ASTORE, var.loc);
+        }
+        return null;
     }
 
     @Override
@@ -244,14 +258,14 @@ public class Visitor extends KnightCodeBaseVisitor<Object> {
         // value is nonzero, so it is true.
         output.mv.visitJumpInsn(Opcodes.IF_ICMPNE, ifLabel);
         // else
-        if (elsePosition > -1) {
-        	for (int i = elsePosition; i < endIfPosition; i++) {
+        if (elsePosition != -1) {
+        	for (int i = elsePosition + 1; i < endIfPosition; i++) {
         		visit(ctx.getChild(i));
         	}
         }
         output.mv.visitJumpInsn(Opcodes.GOTO, endIfLabel);
         output.mv.visitLabel(ifLabel);
-    	for (int i = 5; elsePosition != -1 && i < endIfPosition || i < elsePosition; i++) {
+    	for (int i = 5; elsePosition == -1 && i < endIfPosition || i < elsePosition; i++) {
     		visit(ctx.getChild(i));
     	}
         output.mv.visitLabel(endIfLabel);
@@ -268,7 +282,9 @@ public class Visitor extends KnightCodeBaseVisitor<Object> {
         visit(ctx.getChild(3));
         visit(ctx.comp());
         output.mv.visitJumpInsn(Opcodes.IF_ICMPEQ, endLoop);
-        visit(ctx.stat(0));
+        for (int i = 5; ctx.getChild(i).getText().equals("ENDWHILE"); i++) {
+			visit(ctx.getChild(i));
+		}
         output.mv.visitJumpInsn(Opcodes.GOTO, beginLoop);
         output.mv.visitLabel(endLoop);
         return null;
