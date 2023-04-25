@@ -5,7 +5,7 @@
 
 **Description:**
 - 
-	The KnightCodeCompiler is a final CS322 project to create a compiler of the KnightCode programming language to Java Bytecode. All information of the language can be found in the KnightCodeSkeleton which was forked for this project.
+The KnightCodeCompiler is a final CS322 project to create a compiler of the KnightCode programming language to Java Bytecode. All information of the language can be found in the KnightCodeSkeleton which was forked for this project.
 
 **KnightCode**
 -
