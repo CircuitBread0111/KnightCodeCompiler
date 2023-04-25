@@ -6,24 +6,33 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.tree.*;
-
 import org.objectweb.asm.*;
 import org.objectweb.asm.Opcodes;
-
 import lexparse.*;
 import lexparse.KnightCodeParser.*;
 
+/**
+ * Body Visitor 
+ * @author Jerrin Redmon
+ * @version 1.0
+ * Compiler Project 4
+ * CS322 - Compiler Construction
+ * Spring 2023
+ */ 
 public class Visitor extends KnightCodeBaseVisitor<Object> {
-
 	public ASM output;
 	private int addressCounter = 1;
 	private SymbolTable st = new SymbolTable();
 	private boolean errorEncountered = false;
-	
 	public boolean getErrorEncountered() {
 		return errorEncountered;
 	}
-	
+
+	/**
+	 * Reports any error found and print out the error
+	 * @param ctx the parse tree
+	 * @param error The error to report
+	 */
 	private void reportError(ParserRuleContext ctx, String error) {
 		int lineNumber = ctx.getStart().getLine();
 		int charPos = ctx.getStart().getCharPositionInLine();
@@ -56,7 +65,7 @@ public class Visitor extends KnightCodeBaseVisitor<Object> {
         st.add(identifier, var);
         return null;
     }
-    
+
     @Override
     public Object visitIdentifier(IdentifierContext ctx) {
         return ctx.getText();
@@ -66,7 +75,7 @@ public class Visitor extends KnightCodeBaseVisitor<Object> {
     public Object visitVartype(VartypeContext ctx) {
         return Variable.typeFromString(ctx.getText());
     }
-    
+
 
     @Override
     public Object visitBody(BodyContext ctx) {
@@ -85,15 +94,13 @@ public class Visitor extends KnightCodeBaseVisitor<Object> {
         if (var == null) {
         	reportError(ctx, String.format("There is no variable '%s'.", symbol));
         }
-        
-        // jank because you don't have string literals
         String expr = ctx.getChild(3).getText();
         if (expr.charAt(0) == '"') {
         	output.mv.visitLdcInsn(expr.substring(1, expr.length() - 1));
         } else {
 		    visit(ctx.getChild(3));
         }
-        
+
         if (var.type == Variable.Type.INTEGER) {
 		    output.mv.visitVarInsn(Opcodes.ISTORE, var.loc);
         } else if (var.type == Variable.Type.STRING) {
@@ -156,7 +163,7 @@ public class Visitor extends KnightCodeBaseVisitor<Object> {
         if (var == null) {
         	reportError(ctx, String.format("There is no variable '%s'.", id));
         }
-        
+
         if (var.type == Variable.Type.INTEGER) {
 		    output.mv.visitVarInsn(Opcodes.ILOAD, var.loc);
         } else if (var.type == Variable.Type.STRING) {
@@ -211,7 +218,7 @@ public class Visitor extends KnightCodeBaseVisitor<Object> {
 		    } else if (var.type == Variable.Type.STRING) {
 		    	output.mv.visitVarInsn(Opcodes.ALOAD, var.loc);
 		    	output.mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
-		    }        
+		    }
         }
         return null;
     }
@@ -238,25 +245,23 @@ public class Visitor extends KnightCodeBaseVisitor<Object> {
 
     @Override
     public Object visitDecision(DecisionContext ctx) {
-        // do the comparison
-        visit(ctx.getChild(1));
-        visit(ctx.getChild(3));
-        visit(ctx.comp());
+        // execute the expression in if
+        visit(ctx.expr());
         Label ifLabel = new Label();
         Label endIfLabel = new Label();
-        
+
         // get token positions
         int elsePosition = -1, endIfPosition = -1;
-        for (int i = 5; i < ctx.getChildCount(); i++) {
+        for (int i = 3; i < ctx.getChildCount(); i++) {
         	if (ctx.getChild(i).getText().equals("ELSE")) elsePosition = i;
         	else if (ctx.getChild(i).getText().equals("ENDIF")) {
         		endIfPosition = i;
         		break;
         	}
         }
-        
+
         // value is nonzero, so it is true.
-        output.mv.visitJumpInsn(Opcodes.IF_ICMPNE, ifLabel);
+        output.mv.visitJumpInsn(Opcodes.IFNE, ifLabel);
         // else
         if (elsePosition != -1) {
         	for (int i = elsePosition + 1; i < endIfPosition; i++) {
@@ -265,11 +270,11 @@ public class Visitor extends KnightCodeBaseVisitor<Object> {
         }
         output.mv.visitJumpInsn(Opcodes.GOTO, endIfLabel);
         output.mv.visitLabel(ifLabel);
-    	for (int i = 5; elsePosition == -1 && i < endIfPosition || i < elsePosition; i++) {
+    	for (int i = 3; elsePosition == -1 && i < endIfPosition || i < elsePosition; i++) {
     		visit(ctx.getChild(i));
     	}
         output.mv.visitLabel(endIfLabel);
-        
+
         return null;
     }
 
@@ -278,13 +283,9 @@ public class Visitor extends KnightCodeBaseVisitor<Object> {
         Label beginLoop = new Label();
         Label endLoop = new Label();
         output.mv.visitLabel(beginLoop);
-        visit(ctx.getChild(1));
-        visit(ctx.getChild(3));
-        visit(ctx.comp());
-        output.mv.visitJumpInsn(Opcodes.IF_ICMPEQ, endLoop);
-        for (int i = 5; ctx.getChild(i).getText().equals("ENDWHILE"); i++) {
-			visit(ctx.getChild(i));
-		}
+        visit(ctx.expr());
+        output.mv.visitJumpInsn(Opcodes.IFEQ, endLoop);
+        for (StatContext stat : ctx.stat()) visit(stat);
         output.mv.visitJumpInsn(Opcodes.GOTO, beginLoop);
         output.mv.visitLabel(endLoop);
         return null;

@@ -5,14 +5,11 @@
 
 **Description:**
 - 
-The KnightCodeCompiler is a final CS322 project to create a compiler of the KnightCode programming language to Java Bytecode. All information of the language can be found in the KnightCodeSkeleton which was forked for this project.
-	**How it works?**
-> It works by parsing a tree and traversing it and generates appropriate Bytecode for each function as it traverses the tree which is then fully complied to bytecode then ran by the JVM
-
+	The KnightCodeCompiler is a final CS322 project to create a compiler of the KnightCode programming language to Java Bytecode. All information of the language can be found in the KnightCodeSkeleton which was forked for this project.
 
 **KnightCode**
 -
-Knight code is a basic toy programming language with limitations. It only accepts Integers and Strings as variables. Most operations are not available!
+Knight code is a basic toy programming language. It only accepts Integers and Strings as variables. It does not have subroutines.
 
 *Example of what KnightCode looks like*
 ```
@@ -28,7 +25,7 @@ BEGIN
 	PRINT z
 END
 ```
-This example adds two number and prints the results
+This example adds two number and prints the result
 
 **Requirements:**
 -
@@ -41,20 +38,12 @@ This example adds two number and prints the results
 -
 *To compile Knight Code*
 1. Build the Xml file and or generate the grammer file 
-``KnightCode.g4``
+``$ antlr4 KnightCode.g4 -no-listener -visitor -o lexparse``
 2. Compile the KnightCodeComplier
 ``$ javac complier/kcc.java``
 3. Use kcc with your given *~.kc* file
-``$ java compiler.kcc tests/"Program.kc"``
-
+``$ java compiler.kcc [path]``
 
 **Other notes**
 -
-String literals are very buggy!
-
-
-
-
-
-
-
+The grammar file was changed to improve the semantics of IF statements and WHILE loops. Rather than accepting a specific comparison statement, any expression is accepted. The result is treated like it is in the C programming language. That is, a value of zero is treated as false, and any nonzero value is treated as true. This behavior is more flexible and easier to implement.

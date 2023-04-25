@@ -19,25 +19,25 @@ stat : setvar
     ;
 setvar : 'SET' ID ASSIGN (expr | STRING) ;
 
-expr : '(' expr ')'		# Parenthesis		
+expr : '(' expr ')'		# Parenthesis
 	 | expr MUL expr	# Multiplication
 	 | expr DIV expr	# Division
 	 | expr ADD expr    # Addition
 	 | expr SUB expr    # Subtraction
 	 | expr comp expr   # Comparison
 	 | NUMBER           # Number
-	 | ID   		  	# Id														
-     ;	
+	 | ID   		  	# Id
+     ;
 
-comp : GT 						
-	 | LT 						
-	 | EQ 						
-	 | NEQ						 
+comp : GT
+	 | LT
+	 | EQ
+	 | NEQ
 	 ;
 print : 'PRINT' (STRING | ID) ;
 read : 'READ' ID ;
-decision : 'IF' (NUMBER | ID) comp (NUMBER | ID) 'THEN' stat+ ('ELSE' stat+)* 'ENDIF' ;
-loop : 'WHILE' (NUMBER | ID) comp (NUMBER | ID) 'DO' stat+ 'ENDWHILE' ;
+decision : 'IF' expr 'THEN' stat+ ('ELSE' stat+)* 'ENDIF' ;
+loop : 'WHILE' expr 'DO' stat+ 'ENDWHILE' ;
 
 //LEXER RULES
 ID : LETTER (LETTER | [0-9])* ;

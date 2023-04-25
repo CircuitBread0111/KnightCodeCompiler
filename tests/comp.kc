@@ -1,0 +1,18 @@
+PROGRAM comp
+
+DECLARE
+	INTEGER X
+	INTEGER Y
+	INTEGER R
+BEGIN
+
+	SET X := 10
+	SET Y := 5
+IF X <> Y THEN
+	PRINT "true"
+ENDIF
+IF X = Y THEN 
+	PRINT "false"
+ENDIF
+
+END

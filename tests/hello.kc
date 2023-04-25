@@ -1,0 +1,9 @@
+PROGRAM Hello
+
+DECLARE
+	STRING h
+
+BEGIN
+	SET h := "Hello!"
+	PRINT h
+END

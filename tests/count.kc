@@ -1,0 +1,12 @@
+PROGRAM Count
+
+DECLARE
+	INTEGER x
+
+BEGIN
+	SET x := 0
+	WHILE x < 10 DO
+		PRINT x
+		SET x := x + 1
+	ENDWHILE
+END

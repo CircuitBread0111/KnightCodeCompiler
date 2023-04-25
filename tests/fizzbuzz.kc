@@ -1,0 +1,21 @@
+PROGRAM FizzBuzz
+
+DECLARE
+	INTEGER i
+	INTEGER x
+
+BEGIN
+	PRINT "ENTER A NUMBER:"
+	READ x
+	SET i := 1
+	WHILE i < x + 1 DO
+		IF i / 15 > (i - 1) / 15 THEN PRINT "FizzBuzz"
+		ELSE IF i / 3 > (i - 1) / 3 THEN PRINT "Fizz"
+		ELSE IF i / 5 > (i - 1) / 5 THEN PRINT "Buzz"
+		ELSE PRINT i
+		ENDIF
+		ENDIF
+		ENDIF
+		SET i := i + 1
+	ENDWHILE
+END

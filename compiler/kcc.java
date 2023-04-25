@@ -1,7 +1,4 @@
 package compiler;
-/**
- * This class encapsulates a basic grammar test.
- */
 
 import java.io.IOException;
 import java.io.FileOutputStream;
@@ -11,13 +8,24 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.tree.*;
 import org.antlr.v4.gui.Trees;
-
 import lexparse.*;
 
+/**
+ * KnightCode Compiler
+ * @author Jerrin Redmon
+ * @version 1.0
+ * Compiler Project 4
+ * CS322 - Compiler Construction
+ * Spring 2023
+ */ 
 public class kcc {
 	
+	/**
+	 * Writes an array of bytes to a file
+	 * @param bytearray the array to write
+	 * @param fileName name of the file
+	 */
 	private static void writeFile(byte[] bytearray, String fileName){
-
         try{
             FileOutputStream out = new FileOutputStream(fileName);
             out.write(bytearray);
@@ -34,7 +42,6 @@ public class kcc {
         KnightCodeLexer lexer;
         CommonTokenStream tokens;
         KnightCodeParser parser;
-
         try {
             input = CharStreams.fromFileName(args[0]);  //get the input
             lexer = new KnightCodeLexer(input); //create the lexer
@@ -49,9 +56,7 @@ public class kcc {
             	System.exit(1);
             }
             byte[] output = v.output.finish();
-            writeFile(output, v.output.programName + ".class");
-            
-            //System.out.println(tree.toStringTree(parser));
+            writeFile(output, "./output/" + v.output.programName + ".class");
         }
         catch(IOException e) {
             System.out.println(e.getMessage());

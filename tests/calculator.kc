@@ -1,0 +1,33 @@
+PROGRAM Calculator
+
+DECLARE
+	INTEGER x
+	INTEGER y
+	INTEGER a
+	INTEGER o
+	
+BEGIN
+	SET a := 0 # a is possibly uninitialized
+	WHILE 1 DO
+		PRINT "ENTER A NUMBER:"
+		READ x
+		PRINT "ENTER ANOTHER NUMBER:"
+		READ y
+		PRINT "ENTER OPERATION [1: +, 2: -, 3: *, 4: /]:"
+		READ o
+
+		IF o = 1 THEN
+			SET a := x + y
+		ENDIF
+		IF o = 2 THEN
+			SET a := x - y
+		ENDIF
+		IF o = 3 THEN
+			SET a := x * y
+		ENDIF
+		IF o = 4 THEN
+			SET a := x / y
+		ENDIF
+		PRINT a
+	ENDWHILE
+END
